@@ -1,0 +1,70 @@
+import { expect, test } from '@playwright/test';
+
+test('create a world, save it, and reopen it after refresh', async ({ page }) => {
+  await page.goto('./');
+  await expect(page.getByRole('heading', { name: /VOXELCRAFT/ })).toBeVisible();
+  await page.getByRole('button', { name: 'Cipta Dunia' }).click();
+  await page.locator('input[name="name"]').fill('Dunia Ujian');
+  await page.locator('select[name="preset"]').selectOption('flat');
+  await page.locator('#create-form').getByRole('button', { name: 'Cipta Dunia' }).click();
+  await expect(page.getByRole('heading', { name: 'Dunia Ujian' })).toBeVisible({ timeout: 30000 });
+  await page.getByRole('button', { name: /Main/ }).click();
+  await expect(page.locator('#hud')).toBeVisible();
+  await page.screenshot({ path: 'test-results/world.png' });
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Simpan & Keluar' }).click();
+  await expect(page.getByText('Dunia Ujian')).toBeVisible();
+  await page.reload();
+  await expect(page.getByText('Dunia Ujian')).toBeVisible();
+  await page.getByRole('button', { name: 'Main', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Dunia Ujian' })).toBeVisible({ timeout: 30000 });
+});
+
+test('place a block and export the edited world', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: 'Cipta Dunia' }).click();
+  await page.locator('select[name="preset"]').selectOption('flat');
+  await page.locator('#create-form').getByRole('button', { name: 'Cipta Dunia' }).click();
+  await page.getByRole('button', { name: /Main/ }).click();
+  await page.keyboard.press('4');
+  await page.mouse.move(640, 360);
+  await page.mouse.move(640, 610, { steps: 5 });
+  await page.mouse.click(640, 610, { button: 'right' });
+  await page.keyboard.press('Escape');
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Eksport' }).click();
+  const download = await downloadPromise;
+  const content = await (await import('node:fs/promises')).readFile(await download.path(), 'utf8');
+  const exported = JSON.parse(content);
+  expect(exported.format).toBe('voxelcraft-world');
+  expect(exported.chunks.length).toBeGreaterThan(0);
+  await page.getByRole('button', { name: 'Simpan & Keluar' }).click();
+  await page.getByRole('button', { name: 'Import Dunia' }).click();
+  await page.locator('#import-file').setInputFiles(await download.path());
+  await expect(page.getByRole('heading', { name: exported.world.name })).toBeVisible();
+  await page.getByRole('button', { name: /Main/ }).click();
+  await page.keyboard.press('Escape');
+  const secondDownloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Eksport' }).click();
+  const secondDownload = await secondDownloadPromise;
+  const secondContent = await (await import('node:fs/promises')).readFile(await secondDownload.path(), 'utf8');
+  expect(JSON.parse(secondContent).chunks.length).toBe(exported.chunks.length);
+});
+
+test('touch controls and settings work on a phone-sized screen', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const page = await context.newPage();
+  await page.goto('./');
+  await page.getByRole('button', { name: 'Cipta Dunia' }).click();
+  await page.locator('#create-form').getByRole('button', { name: 'Cipta Dunia' }).click();
+  await page.getByRole('button', { name: /Main/ }).click();
+  await expect(page.locator('#touch-ui')).toBeVisible();
+  await expect(page.locator('#joystick')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Tetapan' }).click();
+  await page.locator('select[name="touchMode"]').selectOption('interact');
+  await page.locator('#settings-form').getByRole('button', { name: 'Simpan' }).click();
+  await page.getByRole('button', { name: 'Sambung' }).click();
+  await expect(page.locator('#touch-ui')).toBeVisible();
+  await context.close();
+});
