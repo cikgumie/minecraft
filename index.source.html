@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ms">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#111827" />
+    <meta name="description" content="VoxelCraft 3D: bina dan teroka dunia voxel dalam browser." />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%icon.svg" />
+    <link rel="manifest" href="%BASE_URL%manifest.webmanifest" />
+    <title>VoxelCraft 3D</title>
+  </head>
+  <body>
+    <div id="app">
+      <div id="viewport"><div id="canvas-host"></div><div id="crosshair" aria-hidden="true"></div></div>
+      <div id="hud" hidden>
+        <div class="hud-top-left">
+          <div class="brand-row"><strong>VOXELCRAFT</strong><span id="fps">-- FPS</span></div>
+          <div id="world-info">0, 0, 0</div>
+          <div id="save-status" role="status">Belum disimpan</div>
+        </div>
+        <div class="hud-top-right">
+          <button id="time-button" class="small-button" aria-label="Tukar waktu">☀ Waktu</button>
+          <button id="fly-button" class="small-button" aria-label="Mod terbang">✦ Terbang</button>
+          <button id="inventory-button" class="small-button" aria-label="Buka inventori">▦ Blok</button>
+          <button id="pause-button" class="small-button" aria-label="Jeda">⚙ Menu</button>
+        </div>
+        <div id="target-name"></div>
+        <div class="hotbar-wrap"><div id="hotbar" aria-label="Hotbar"></div></div>
+        <div id="touch-ui" hidden>
+          <div id="joystick" aria-label="Joystick gerakan"><div id="joystick-knob"></div></div>
+          <div class="touch-actions">
+            <button id="touch-mine">PECAH</button><button id="touch-place">LETAK</button>
+            <button id="touch-jump">LOMPAT</button><button id="touch-fly">TERBANG</button>
+          </div>
+        </div>
+      </div>
+      <div id="toast" role="status" aria-live="polite"></div>
+      <div id="overlay" class="overlay">
+        <main class="panel" id="panel">
+          <div class="panel-heading"><span class="cube-mark">▣</span><h1>VOXELCRAFT <span>3D</span></h1><p>Bina dunia sendiri, satu blok demi satu blok.</p></div>
+          <div id="panel-content"></div>
+        </main>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
